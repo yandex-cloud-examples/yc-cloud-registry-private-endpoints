@@ -1,4 +1,4 @@
-# Объявление переменных
+# Set Variables
 
 variable "folder_id" {
   type = string
@@ -27,7 +27,7 @@ locals {
   zone            = "ru-central1-a"
 }
 
-# Настройка провайдера
+# Setup the Provider
 
 terraform {
   required_providers {
@@ -42,27 +42,27 @@ provider "yandex" {
   folder_id = var.folder_id
 }
 
-# Получение образа Container Optimized Image
+# Get the Container Optimized Image
 
 data "yandex_compute_image" "coi" {
   family    = "container-optimized-image"
   folder_id = "standard-images"
 }
 
-# Получение образа Ubuntu 24.04
+# Get the Ubuntu 24.04 Image
 
 data "yandex_compute_image" "ubuntu" {
   family    = "ubuntu-2404-lts-oslogin"
   folder_id = "standard-images"
 }
 
-# Создание облачной сети
+# Create a Cloud Network
 
 resource "yandex_vpc_network" "cr_private_net" {
   name = local.network_name
 }
 
-# Создание подсети
+# Create a Subnet
 
 resource "yandex_vpc_subnet" "cr_private_subnet" {
   name           = local.subnet_name
@@ -71,7 +71,7 @@ resource "yandex_vpc_subnet" "cr_private_subnet" {
   v4_cidr_blocks = [local.subnet_cidr]
 }
 
-# Резервирование IP-адреса для сервисного подключения Object Storage
+# Reserve an IP Address for the Object Storage Private Endpoint
 
 resource "yandex_vpc_address" "storage_pe_address" {
   name = local.storage_pe_addr
@@ -82,7 +82,7 @@ resource "yandex_vpc_address" "storage_pe_address" {
   }
 }
 
-# Резервирование IP-адреса для сервисного подключения Cloud Registry
+# Reserve an IP Address for the Cloud Registry Private Endpoint
 
 resource "yandex_vpc_address" "cr_pe_address" {
   name = local.cr_pe_addr
@@ -93,7 +93,7 @@ resource "yandex_vpc_address" "cr_pe_address" {
   }
 }
 
-# Резервирование IP-адреса для тестовой виртуальной машины
+# Reserve an IP Address for the Test VM
 
 resource "yandex_vpc_address" "private_vm_address" {
   name = local.vm_addr
@@ -104,7 +104,7 @@ resource "yandex_vpc_address" "private_vm_address" {
   }
 }
 
-# Создание реестра Cloud Registry
+# Create a Cloud Registry
 
 resource "yandex_cloudregistry_registry" "cr_private_demo" {
   name      = local.registry_name
@@ -113,13 +113,13 @@ resource "yandex_cloudregistry_registry" "cr_private_demo" {
   type      = "LOCAL"
 }
 
-# Создание сервисного аккаунта
+# Create a Service Account
 
 resource "yandex_iam_service_account" "cr_pusher" {
   name = local.sa_name
 }
 
-# Назначение роли сервисному аккаунту
+# Assign Role to the Service Account
 
 resource "yandex_resourcemanager_folder_iam_member" "cr_pusher_role" {
   folder_id = var.folder_id
@@ -127,7 +127,7 @@ resource "yandex_resourcemanager_folder_iam_member" "cr_pusher_role" {
   member    = "serviceAccount:${yandex_iam_service_account.cr_pusher.id}"
 }
 
-# Создание сервисного подключения Object Storage
+# Create the Object Storage Private Endpoint
 
 resource "yandex_vpc_private_endpoint" "storage_pe" {
   name         = local.storage_pe_name
@@ -143,7 +143,7 @@ resource "yandex_vpc_private_endpoint" "storage_pe" {
   }
 }
 
-# Создание сервисного подключения Cloud Registry
+# Create the Cloud Registry Private Endpoint
 
 resource "yandex_vpc_private_endpoint" "cloud_registry_pe" {
   name         = local.cr_pe_name
@@ -161,7 +161,7 @@ resource "yandex_vpc_private_endpoint" "cloud_registry_pe" {
   depends_on = [yandex_vpc_private_endpoint.storage_pe]
 }
 
-# Создание тестовой виртуальной машины
+# Create the Test VM
 
 resource "yandex_compute_instance" "cr_private_vm" {
   name               = local.private_vm_name
@@ -192,7 +192,7 @@ resource "yandex_compute_instance" "cr_private_vm" {
   }
 }
 
-# Создание промежуточной виртуальной машины
+# Create the Jump VM
 
 resource "yandex_compute_instance" "jump_vm" {
   name        = local.jump_vm_name
@@ -221,14 +221,14 @@ resource "yandex_compute_instance" "jump_vm" {
   }
 }
 
-# Вывод идентификатора реестра Cloud Registry
+# Output the Cloud Registry ID
 
 output "registry_id" {
   description = "Cloud Registry ID"
   value       = yandex_cloudregistry_registry.cr_private_demo.id
 }
 
-# Вывод публичного IP-адреса промежуточной виртуальной машины
+# Output the Jump VM Public IP
 
 output "jump_vm_public_ip" {
   description = "Public IP address of jump VM"

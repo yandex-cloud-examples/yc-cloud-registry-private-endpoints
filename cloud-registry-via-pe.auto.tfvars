@@ -1,2 +1,2 @@
-folder_id         = "<идентификатор_каталога>"
-ssh_key_path      = "<путь_к_файлу_с_публичным_SSH-ключом>"
+folder_id         = "<folder_ID>"
+ssh_key_path      = "<local_path_to_the_public_SSH_key>"
